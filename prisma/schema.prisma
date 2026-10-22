@@ -1,0 +1,191 @@
+// Lynn Luxe Event Studio — data model.
+// Everything the public site shows lives here and is editable from /admin.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")          // pooled connection (Neon / Vercel Postgres)
+  directUrl = env("DATABASE_URL_UNPOOLED") // direct connection, used for schema changes
+}
+
+/// Page copy, brand details, contact info, popup, SEO… stored as JSON per key.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  title          String
+  kicker         String       @default("")
+  tagline        String       @default("")
+  summary        String       @default("")
+  description    String       @default("")
+  image          String       @default("")
+  icon           String       @default("Sparkles")
+  highlights     Json         @default("[]")
+  order          Int          @default(0)
+  published      Boolean      @default(true)
+  seoTitle       String       @default("")
+  seoDescription String       @default("")
+  subServices    SubService[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model SubService {
+  id          String   @id @default(cuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  slug        String
+  title       String
+  summary     String   @default("")
+  description String   @default("")
+  image       String   @default("")
+  features    Json     @default("[]")
+  order       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([serviceId, slug])
+}
+
+model EventType {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  tagline      String   @default("")
+  summary      String   @default("")
+  description  String   @default("")
+  image        String   @default("")
+  highlights   Json     @default("[]")
+  included     Json     @default("[]")
+  order        Int      @default(0)
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  kicker      String   @default("")
+  location    String   @default("")
+  tagline     String   @default("")
+  summary     String   @default("")
+  description String   @default("")
+  image       String   @default("")
+  video       String   @default("")
+  gallery     Json     @default("[]")
+  stats       Json     @default("[]")
+  features    Json     @default("[]")
+  steps       Json     @default("[]")
+  mapUrl      String   @default("")
+  order       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GalleryItem {
+  id        String   @id @default(cuid())
+  title     String   @default("")
+  category  String   @default("Décor")
+  image     String
+  featured  Boolean  @default(false)
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  event     String   @default("")
+  quote     String
+  rating    Int      @default(5)
+  image     String   @default("")
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String   @default("General")
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String   @default("")
+  eventType String   @default("")
+  eventDate String   @default("")
+  guests    String   @default("")
+  budget    String   @default("")
+  services  String   @default("")
+  message   String   @default("")
+  source    String   @default("website")
+  page      String   @default("")
+  status    String   @default("new")
+  notes     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Portfolio case studies.
+model Project {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  occasion  String   @default("")
+  location  String   @default("")
+  year      String   @default("")
+  guests    String   @default("")
+  summary   String   @default("")
+  brief     String   @default("")
+  design    String   @default("")
+  details   String   @default("")
+  palette   Json     @default("[]")
+  cover     String   @default("")
+  gallery   Json     @default("[]")
+  services  Json     @default("[]")
+  quote     String   @default("")
+  quoteBy   String   @default("")
+  featured  Boolean  @default(false)
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Journal / blog articles. Body supports simple markdown: ## headings, - lists, blank-line paragraphs.
+model Post {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String   @default("")
+  category    String   @default("Planning")
+  cover       String   @default("")
+  body        String   @default("")
+  author      String   @default("Lynn Luxe Studio")
+  publishedAt String   @default("")
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
